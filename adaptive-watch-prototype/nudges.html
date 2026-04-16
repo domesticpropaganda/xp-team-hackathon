@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adaptive Intelligence — Nudges</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-shell:         #1c1c1a;
+      --bg-screen:        #0d0d0b;
+      --bg-surface:       #1a1a18;
+      --accent-primary:   #D97757;
+      --accent-secondary: #6A9BCC;
+      --text-primary:     #FAF9F5;
+      --text-secondary:   #B0AEA5;
+      --text-ghost:       #5a5a58;
+      --border-subtle:    #2e2e2b;
+      --border-card:      #2a2a28;
+    }
+
+    html, body { height: 100%; }
+    body {
+      background: #0a0a09;
+      font-family: 'Poppins', sans-serif;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 40px 20px 60px;
+      min-height: 100vh;
+      color: var(--text-primary);
+    }
+
+    /* Header */
+    .page-header { text-align: center; margin-bottom: 28px; }
+    .brand {
+      display: block;
+      font-size: 12px; font-weight: 300;
+      color: #3a3a38; letter-spacing: 0.2em; text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .phase-name { display: block; font-size: 11px; font-weight: 300; color: #3a3a38; letter-spacing: 0.05em; }
+
+    /* Phase tabs */
+    .phase-tabs { display: flex; gap: 8px; margin-bottom: 36px; flex-wrap: wrap; justify-content: center; }
+    .phase-tab {
+      height: 32px; padding: 0 14px; border-radius: 16px;
+      font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 300;
+      cursor: pointer; border: 1px solid var(--border-subtle);
+      background: transparent; color: var(--text-ghost);
+      text-decoration: none; display: inline-flex; align-items: center;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      white-space: nowrap;
+    }
+    .phase-tab:hover:not(.active) { color: var(--text-secondary); }
+    .phase-tab.active {
+      background: var(--accent-primary); color: var(--text-primary);
+      border-color: var(--accent-primary); pointer-events: none;
+    }
+
+    /* Layout */
+    .prototype-layout {
+      display: flex; align-items: flex-start; gap: 48px;
+      animation: layoutIn 0.25s ease both;
+    }
+    @keyframes layoutIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .watch-column { display: flex; flex-direction: column; align-items: center; }
+
+    /* Watch */
+    .watch-band { width: 130px; height: 28px; background: var(--bg-surface); }
+    .watch-band.top    { border-radius: 8px 8px 0 0; }
+    .watch-band.bottom { border-radius: 0 0 8px 8px; }
+    .watch-shell {
+      width: 176px; height: 210px;
+      background: var(--bg-shell); border-radius: 44px;
+      position: relative; display: flex; align-items: center; justify-content: center;
+    }
+    .watch-crown {
+      position: absolute; right: -9px; top: 44px;
+      width: 7px; height: 30px;
+      background: var(--bg-shell); border-radius: 3px; border: 1px solid #343432;
+    }
+    .watch-side-btn {
+      position: absolute; right: -9px; top: 86px;
+      width: 7px; height: 18px;
+      background: var(--bg-shell); border-radius: 3px; border: 1px solid #343432;
+    }
+
+    /* Screen */
+    .watch-screen {
+      width: 156px; height: 190px;
+      background: var(--bg-screen); border-radius: 36px;
+      overflow: hidden; position: relative;
+      display: flex; flex-direction: column;
+    }
+
+    /* Status bar */
+    .status-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px 5px; flex-shrink: 0;
+    }
+    .status-time { font-size: 11px; font-weight: 400; color: var(--text-primary); line-height: 1; }
+    .status-dot  { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Typography */
+    .source-label { font-size: 10px; font-weight: 300; color: var(--text-secondary); line-height: 1.4; }
+
+    /* Card container */
+    .nudge-cards-container { flex: 1; position: relative; overflow: hidden; }
+    .nudge-card {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      opacity: 0; transform: translateX(8px);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      pointer-events: none;
+    }
+    .nudge-card.active { opacity: 1; transform: translateX(0); pointer-events: all; }
+
+    .card-body { flex: 1; display: flex; padding: 4px 10px 4px 14px; overflow: hidden; }
+    .urgency-bar { width: 2px; flex-shrink: 0; margin-right: 10px; align-self: stretch; }
+    .card-content { flex: 1; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
+    .card-headline {
+      font-size: 13px; font-weight: 400; color: var(--text-primary); line-height: 1.3;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .card-sub { font-size: 11px; font-weight: 300; color: var(--text-secondary); line-height: 1.4; }
+
+    /* Screen actions */
+    .screen-actions { display: flex; gap: 6px; padding: 4px 14px 10px; flex-shrink: 0; }
+
+    /* Buttons */
+    .btn-pill {
+      flex: 1; height: 28px; border-radius: 14px;
+      font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 300;
+      border: none; cursor: pointer;
+      transition: opacity 0.15s ease; line-height: 1;
+    }
+    .btn-pill:active { opacity: 0.75; }
+    .btn-primary   { background: var(--accent-primary);   color: var(--text-primary); }
+    .btn-secondary { background: var(--border-card);      color: var(--text-secondary); }
+    .btn-blue      { background: var(--accent-secondary); color: var(--text-primary); }
+    .btn-auto      { flex: 0 0 auto; padding: 0 16px; }
+
+    /* In-screen pagination dots */
+    .screen-pagination {
+      display: flex; justify-content: center; align-items: center;
+      gap: 5px; padding: 5px 0 8px; flex-shrink: 0;
+    }
+    .screen-dot {
+      border-radius: 50%; background: var(--border-subtle);
+      width: 4px; height: 4px; flex-shrink: 0;
+      transition: width 0.15s ease, height 0.15s ease, background 0.15s ease;
+    }
+    .screen-dot.active { background: var(--accent-primary); width: 6px; height: 6px; }
+
+    /* External navigation */
+    .watch-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; height: 20px; }
+    .nav-arrow {
+      background: none; border: none; color: var(--text-ghost);
+      font-size: 18px; cursor: pointer; padding: 0; line-height: 1;
+      width: 20px; text-align: center; font-family: inherit;
+      transition: color 0.15s ease;
+    }
+    .nav-arrow:hover { color: var(--text-secondary); }
+    .ext-dots { display: flex; gap: 5px; align-items: center; }
+    .ext-dot {
+      border-radius: 50%; background: var(--border-subtle);
+      width: 4px; height: 4px; flex-shrink: 0;
+      transition: width 0.15s ease, height 0.15s ease, background 0.15s ease;
+    }
+    .ext-dot.active { background: var(--accent-primary); width: 6px; height: 6px; }
+
+    /* Context panel */
+    .context-panel { width: 260px; padding-top: 4px; }
+    .ctx-eyebrow {
+      font-size: 10px; font-weight: 300; color: var(--text-ghost);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .ctx-source {
+      font-size: 12px; font-weight: 300;
+      color: var(--text-secondary); line-height: 1.6;
+      margin-bottom: 16px; transition: opacity 0.15s ease;
+    }
+    .ctx-note { font-size: 11px; font-weight: 300; color: var(--text-ghost); }
+
+    @media (max-width: 700px) {
+      .prototype-layout { flex-direction: column; align-items: center; }
+      .context-panel { width: 100%; max-width: 300px; padding-top: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <span class="brand">Adaptive Intelligence</span>
+    <span class="phase-name">Prototype · Nudges</span>
+  </header>
+
+  <nav class="phase-tabs">
+    <a class="phase-tab"        href="morning.html">6:47am · Morning brief</a>
+    <a class="phase-tab active" href="nudges.html">10:23am · Nudges</a>
+    <a class="phase-tab"        href="postworkout.html">12:40pm · Post-workout</a>
+  </nav>
+
+  <div class="prototype-layout">
+
+    <div class="watch-column">
+      <div class="watch-band top"></div>
+      <div class="watch-shell">
+        <div class="watch-crown"></div>
+        <div class="watch-side-btn"></div>
+        <div class="watch-screen">
+
+          <div class="status-bar">
+            <span class="status-time" id="nudge-time">10:23</span>
+            <div class="status-dot" id="nudge-dot" style="background: var(--accent-primary)"></div>
+          </div>
+
+          <div class="nudge-cards-container">
+
+            <!-- Card 0 — High urgency -->
+            <div class="nudge-card active" id="nudge-card-0">
+              <div class="card-body">
+                <div class="urgency-bar" style="background: var(--accent-primary)"></div>
+                <div class="card-content">
+                  <div class="source-label">Slack · now</div>
+                  <div class="card-headline">Tom needs your call on Platform timeline</div>
+                  <div class="card-sub" id="card0-sub">Sprint blocked. 4 people waiting.</div>
+                </div>
+              </div>
+              <div class="screen-actions" style="padding-top: 2px;">
+                <button class="btn-pill btn-primary"   id="card0-reply-btn">Reply</button>
+                <button class="btn-pill btn-secondary" id="card0-later-btn">Later</button>
+              </div>
+              <div class="screen-pagination">
+                <div class="screen-dot active"></div>
+                <div class="screen-dot"></div>
+                <div class="screen-dot"></div>
+              </div>
+            </div>
+
+            <!-- Card 1 — Medium urgency -->
+            <div class="nudge-card" id="nudge-card-1">
+              <div class="card-body">
+                <div class="urgency-bar" style="background: var(--accent-secondary)"></div>
+                <div class="card-content">
+                  <div class="source-label">Outlook · 8 min ago</div>
+                  <div class="card-headline">Sarah's Meridian proposal is ready</div>
+                  <div class="card-sub" id="card1-sub">Review before EOD to move to contract.</div>
+                </div>
+              </div>
+              <div class="screen-actions" style="padding-top: 2px;">
+                <button class="btn-pill btn-blue"      id="card1-flag-btn">Flag</button>
+                <button class="btn-pill btn-secondary" id="card1-dismiss-btn">Dismiss</button>
+              </div>
+              <div class="screen-pagination">
+                <div class="screen-dot"></div>
+                <div class="screen-dot active"></div>
+                <div class="screen-dot"></div>
+              </div>
+            </div>
+
+            <!-- Card 2 — Awareness only -->
+            <div class="nudge-card" id="nudge-card-2">
+              <div class="card-body">
+                <div class="urgency-bar" style="background: var(--border-subtle)"></div>
+                <div class="card-content">
+                  <div class="source-label">HubSpot · 1 hr ago</div>
+                  <div class="card-headline">Platform bottleneck clearing</div>
+                  <div class="card-sub" id="card2-sub">Tom confirmed Q3. Sprint resumed.</div>
+                </div>
+              </div>
+              <div class="screen-actions" style="padding-top: 2px;">
+                <button class="btn-pill btn-secondary btn-auto" id="card2-gotit-btn">Got it</button>
+              </div>
+              <div class="screen-pagination">
+                <div class="screen-dot"></div>
+                <div class="screen-dot"></div>
+                <div class="screen-dot active"></div>
+              </div>
+            </div>
+
+          </div><!-- /nudge-cards-container -->
+        </div><!-- /watch-screen -->
+      </div><!-- /watch-shell -->
+      <div class="watch-band bottom"></div>
+
+      <!-- External navigation -->
+      <div class="watch-nav">
+        <button class="nav-arrow" id="nav-prev" aria-label="Previous card">&#8592;</button>
+        <div class="ext-dots" id="ext-dots">
+          <div class="ext-dot active"></div>
+          <div class="ext-dot"></div>
+          <div class="ext-dot"></div>
+        </div>
+        <button class="nav-arrow" id="nav-next" aria-label="Next card">&#8594;</button>
+      </div>
+    </div><!-- /watch-column -->
+
+    <div class="context-panel">
+      <div class="ctx-eyebrow">3 nudges · filtered from 12 signals</div>
+      <div class="ctx-source" id="nudge-ctx-source">
+        Tom messaged twice overnight. Engineering sprint starts in 40 min.
+      </div>
+      <div class="ctx-note">Non-urgent signals held for EOD recap</div>
+    </div>
+
+  </div><!-- /prototype-layout -->
+
+  <script>
+    'use strict';
+
+    const audio = { chime: new Audio('audio/chime.mp3') };
+    audio.chime.addEventListener('error', () => {});
+
+    let activeCard = 0;
+    const CARD_COUNT = 3;
+
+    const nudgeTimes     = ['10:23', '10:31', '11:47'];
+    const nudgeDotColors = ['var(--accent-primary)', 'var(--accent-secondary)', 'var(--border-subtle)'];
+    const nudgeCtxTexts  = [
+      'Tom messaged twice overnight. Engineering sprint starts in 40 min.',
+      'Sarah sent the draft 8 min ago. Meridian close window is today.',
+      'Bottleneck you unblocked this morning. No action needed.'
+    ];
+
+    function showCard(index) {
+      index = ((index % CARD_COUNT) + CARD_COUNT) % CARD_COUNT;
+
+      document.querySelectorAll('.nudge-card').forEach((c, i) =>
+        c.classList.toggle('active', i === index)
+      );
+      document.querySelectorAll('.ext-dot').forEach((d, i) =>
+        d.classList.toggle('active', i === index)
+      );
+
+      document.getElementById('nudge-time').textContent     = nudgeTimes[index];
+      document.getElementById('nudge-dot').style.background = nudgeDotColors[index];
+
+      const src = document.getElementById('nudge-ctx-source');
+      src.style.opacity = '0';
+      setTimeout(() => { src.textContent = nudgeCtxTexts[index]; src.style.opacity = '1'; }, 120);
+
+      activeCard = index;
+    }
+
+    document.getElementById('nav-next').addEventListener('click', () => showCard(activeCard + 1));
+    document.getElementById('nav-prev').addEventListener('click', () => showCard(activeCard - 1));
+
+    document.getElementById('card0-reply-btn').addEventListener('click', () => {
+      const btn = document.getElementById('card0-reply-btn');
+      audio.chime.play().catch(() => {});
+      btn.textContent = 'Sent \u2713';
+      btn.disabled = true;
+      setTimeout(() => { btn.textContent = 'Reply'; btn.disabled = false; }, 2000);
+    });
+
+    document.getElementById('card0-later-btn').addEventListener('click', () =>
+      flashSub('card0-sub', 'Dismissed', 1500)
+    );
+
+    document.getElementById('card1-flag-btn').addEventListener('click', () => {
+      const btn = document.getElementById('card1-flag-btn');
+      btn.textContent      = 'Flagged';
+      btn.style.background = '#5a5a58';
+    });
+
+    document.getElementById('card1-dismiss-btn').addEventListener('click', () =>
+      flashSub('card1-sub', 'Dismissed', 1500)
+    );
+
+    document.getElementById('card2-gotit-btn').addEventListener('click', () =>
+      flashSub('card2-sub', 'Dismissed', 1500)
+    );
+
+    function flashSub(id, text, duration) {
+      const el = document.getElementById(id);
+      const orig = el.textContent;
+      el.textContent = text;
+      setTimeout(() => { el.textContent = orig; }, duration);
+    }
+  </script>
+</body>
+</html>
